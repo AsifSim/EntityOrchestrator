@@ -1,0 +1,12 @@
+{
+  "entity": "person",
+  "attributes": [
+    {"numeric": "uid"},
+    {"string": "uname"},
+    {"integer": "age"},
+    {"string":"contact"},
+    {"integer": "vehicle"}
+  ],
+  "relationshipEntity": {"entity":"vehicle"},
+  "primary": "uid"
+}

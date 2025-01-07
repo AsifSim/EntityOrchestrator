@@ -1,0 +1,10 @@
+{
+  "entity": "vehicle",
+  "attributes": [
+    {"numeric": "vid"},
+    {"string": "vehicle_name"},
+    {"string":"registration_number"}
+  ],
+  "relationshipEntity": null,
+  "primary": "vid"
+}
