@@ -1,12 +1,75 @@
 {
   "entity": "person",
   "attributes": [
-    {"numeric": "uid"},
-    {"string": "uname"},
-    {"integer": "age"},
-    {"string":"contact"},
-    {"integer": "vehicle"}
+    {
+      "type": "numeric",
+      "name": "uid",
+      "maxLength": null,
+      "isIndexed": true,
+      "allowNull": false,
+      "isPrimaryKey": true,
+      "isMandatory": true,
+      "validValues": null,
+      "relatedEntity": null
+    },
+    {
+      "type": "string",
+      "name": "uname",
+      "maxLength": 50,
+      "isIndexed": false,
+      "allowNull": true,
+      "isPrimaryKey": false,
+      "isMandatory": true,
+      "validValues": null,
+      "relatedEntity": null
+    },
+    {
+      "type": "integer",
+      "name": "age",
+      "maxLength": null,
+      "isIndexed": false,
+      "allowNull": true,
+      "isPrimaryKey": false,
+      "isMandatory": false,
+      "validValues": null,
+      "relatedEntity": null
+    },
+    {
+      "type": "string",
+      "name": "contact",
+      "maxLength": 15,
+      "isIndexed": false,
+      "allowNull": true,
+      "isPrimaryKey": false,
+      "isMandatory": true,
+      "validValues": null,
+      "relatedEntity": null
+    },
+    {
+      "type": "integer",
+      "name": "vehicle",
+      "maxLength": null,
+      "isIndexed": false,
+      "allowNull": true,
+      "isPrimaryKey": false,
+      "isMandatory": true,
+      "validValues": null,
+      "relatedEntity": "vehicle"
+    },
+    {
+      "type": "boolean",
+      "name": "delete",
+      "maxLength": null,
+      "isIndexed": false,
+      "allowNull": true,
+      "isPrimaryKey": false,
+      "isMandatory": true,
+      "validValues": null,
+      "relatedEntity": null
+    }
   ],
-  "relationshipEntity": {"entity":"vehicle"},
+  "relationshipEntity": [
+    {"entity":"vehicle"}
+  ],
   "primary": "uid"
 }

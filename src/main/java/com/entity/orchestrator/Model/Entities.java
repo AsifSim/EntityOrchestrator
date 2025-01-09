@@ -3,21 +3,23 @@ package com.entity.orchestrator.Model;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.stereotype.Service;
 
-import java.util.List;
+import java.util.HashMap;
 import java.util.Map;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@Service
 public class Entities {
-    Map<String,Entity> entities;
+    Map<String,Entity> entityMap=new HashMap<>();
 
-    public Map<String, Entity> getEntities() {
-        return entities;
+    public Map<String, Entity> getEntityMap() {
+        return entityMap;
     }
 
-    public void setEntities(Map<String, Entity> entities) {
-        this.entities = entities;
+    public void setEntityMap(Map<String, Entity> entityMap) {
+        this.entityMap = entityMap;
     }
 }

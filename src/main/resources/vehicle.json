@@ -1,10 +1,53 @@
 {
   "entity": "vehicle",
   "attributes": [
-    {"numeric": "vid"},
-    {"string": "vehicle_name"},
-    {"string":"registration_number"}
+    {
+      "type": "numeric",
+      "name": "vid",
+      "maxLength": null,
+      "isIndexed": true,
+      "allowNull": false,
+      "isPrimaryKey": true,
+      "isMandatory": true,
+      "validValues": null,
+      "relatedEntity": null
+    },
+    {
+      "type": "string",
+      "name": "vehicle_name",
+      "maxLength": 50,
+      "isIndexed": false,
+      "allowNull": true,
+      "isPrimaryKey": false,
+      "isMandatory": true,
+      "validValues": null,
+      "relatedEntity": null
+    },
+    {
+      "type": "string",
+      "name": "registration_number",
+      "maxLength": 20,
+      "isIndexed": false,
+      "allowNull": true,
+      "isPrimaryKey": false,
+      "isMandatory": true,
+      "validValues": null,
+      "relatedEntity": null
+    },
+    {
+      "type": "boolean",
+      "name": "delete",
+      "maxLength": null,
+      "isIndexed": false,
+      "allowNull": true,
+      "isPrimaryKey": false,
+      "isMandatory": true,
+      "validValues": null,
+      "relatedEntity": null
+    }
   ],
-  "relationshipEntity": null,
+  "relationshipEntity": [
+    {"entity":null}
+  ],
   "primary": "vid"
 }
