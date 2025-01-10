@@ -6,6 +6,7 @@ import com.entity.orchestrator.Validations.PostStartupValidations;
 import com.entity.orchestrator.Validations.StartupValidations;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import flink.generic.db.Application;
+import flink.generic.db.Model.Condition;
 import flink.generic.db.Service.GenericQueryService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -83,21 +84,28 @@ public class EntityLoader{
         logger.info("========="+entityMap.get("person").getEntity()+"=============="+entityMap.get("vehicle").getEntity());
         entities.setEntityMap(entityMap);
 
-        Integer status=startupValidate.startupValidations(entityMap.get("person"));
-        if(status==0)
-        logger.info("\n"+
-                "                                                      __        _   _   _   __   __ \n" +
-                " \\  /   _.  |  o   _|   _.  _|_  o   _   ._    _    (_   | |  /   /   |_  (_   (_  \n" +
-                "  \\/   (_|  |  |  (_|  (_|   |_  |  (_)  | |  _>    __)  |_|  \\_  \\_  |_  __)  __) \n" +
-                "                                                                                  ");
-        else logger.info("\n"+
-                "                                                      _         ___       _   _  \n" +
-                " \\  /   _.  |  o   _|   _.  _|_  o   _   ._    _    |_   /\\    |   |   |_  | \\ \n" +
-                "  \\/   (_|  |  |  (_|  (_|   |_  |  (_)  | |  _>    |   /--\\  _|_  |_  |_  |_/ \n" +
-                "                                                                              ");
+        System.out.println(entities.getEntityMap().get("person").fetchAll());
+        System.out.println("count = "+entities.getEntityMap().get("person").count(new ArrayList<>(List.of(new Condition("uname","Deepak","=","AND")))));
+        for(Entity entity: entityList){
+            Integer status=startupValidate.startupValidations(entity);
+            if(status==0){
+                logger.info("\n"+
+                        "                                                      __        _   _   _   __   __ \n" +
+                        " \\  /   _.  |  o   _|   _.  _|_  o   _   ._    _    (_   | |  /   /   |_  (_   (_  \n" +
+                        "  \\/   (_|  |  |  (_|  (_|   |_  |  (_)  | |  _>    __)  |_|  \\_  \\_  |_  __)  __) \n" +
+                        "                                                                                  ");
+                entities.setEntityMap(entityMap);
+            }
+            else logger.info("\n"+
+                    "                                                      _         ___       _   _  \n" +
+                    " \\  /   _.  |  o   _|   _.  _|_  o   _   ._    _    |_   /\\    |   |   |_  | \\ \n" +
+                    "  \\/   (_|  |  |  (_|  (_|   |_  |  (_)  | |  _>    |   /--\\  _|_  |_  |_  |_/ \n" +
+                    "                                                                              ");
+        }
+
+        //=============The code below is only for testing Insert operation====================
         List<Map<String,Object>> dataToInsert=new ArrayList<>();
         Map<String,Object> hm = new HashMap<>();
-        hm.put("uid","50005");
         hm.put("uname","Nikhitha");
         hm.put("age","2");
         hm.put("contact","8768767");
