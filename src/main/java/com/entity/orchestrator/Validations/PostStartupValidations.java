@@ -8,10 +8,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class PostStartupValidations {
@@ -46,14 +44,22 @@ public class PostStartupValidations {
         logger.info("=============Inside Class {}, Function {}", this.getClass().getSimpleName(), (new Object() {}.getClass().getEnclosingMethod().getName()));
         logger.info("Parameter(entityName = {}, Attributes = {}, PrimaryKey = {}, RelatedEntities = {})", entity.getEntity(),entity.getAttributes().toString(),entity.getPrimary(),entity.getRelationshipEntity());
         List<String> notNull= new ArrayList<>();
-        for(Map<String,Object> attribute: entity.getAttributes()){
-            if(!(boolean)attribute.get("allowNull")) notNull.add(attribute.get("name").toString());
+        entity.getAttributes().stream()
+                .peek(attribute -> logger.info("attribute = {}", attribute.toString()))
+                .filter(attribute -> !(boolean)attribute.get("allowNull"))
+                .map(attribute -> attribute.get("name").toString()).forEach(notNull::add);
+        logger.info("notNull =  {}",notNull.toString());
+        Optional<ValidationResponse> response = valuesList.stream()
+                .peek(values -> logger.info("values = {}", values))
+                .flatMap(values -> notNull.stream().filter(attribute -> values.get(attribute) == null)
+                        .map(attribute -> new ValidationResponse(false, "The non-null attribute: " + attribute + " is null"))
+                )
+                .findFirst();
+        if (response.isPresent()) {
+            return response.get();
         }
-        for(Map<String,Object> values:valuesList){
-            for(String attribute: notNull)if(values.get(attribute)==null)return new ValidationResponse(false,"The non null attribute: "+attribute+" is null");
-        }
-        logger.info("=============Going out of {}", (new Object() {}.getClass().getEnclosingMethod().getName()));
-        return new ValidationResponse(true,null);
+        logger.info("=============Going out of {}", new Object() {}.getClass().getEnclosingMethod().getName());
+        return new ValidationResponse(true, null);
     }
 
 //    public ValidationResponse nonNullValidation(Entity entity, Map<String, Object> valuesList){
@@ -81,14 +87,25 @@ public class PostStartupValidations {
         logger.info("Total time taken = {}ms",endTime-startTime);
         logger.info("fetchedResult = {}",fetchResult.toString());
         HashMap<String,Integer> unique=new HashMap<>();
-        for(Map<String,Object> record: fetchResult){
-            unique.put(record.get(entity.getPrimary()).toString(),unique.getOrDefault(record.get(entity.getPrimary()),0)+1);
-            if(unique.get(record.get(entity.getPrimary()).toString())>1){
-                logger.info("=============Going out of {}", (new Object() {}.getClass().getEnclosingMethod().getName()));
-                return new ValidationResponse(false,"The unique column "+entity.getPrimary()+" contains duplicate value "+record.get(entity.getPrimary()));
-            }
+        Optional<ValidationResponse> response = fetchResult.stream()
+                .peek(record -> logger.info("record = {}", record.toString()))
+                .map(record -> record.get(entity.getPrimary()).toString())
+                .collect(Collectors.toMap(
+                        primaryKey -> primaryKey,
+                        primaryKey -> 1,
+                        Integer::sum
+                )).entrySet().stream().peek(entry -> logger.info("unique = {}", unique.toString()))
+                .filter(entry -> entry.getValue() > 1).findFirst().map(entry -> {
+                    logger.info("The primary key is not unique");
+                    logger.info("=============Going out of {}", new Object() {}.getClass().getEnclosingMethod().getName());
+                    return new ValidationResponse(false, "The unique column " + entity.getPrimary() + " contains duplicate value " + entry.getKey());
+                });
+
+        if (response.isPresent()) {
+            return response.get();
         }
-        logger.info("=============Going out of {}", (new Object() {}.getClass().getEnclosingMethod().getName()));
-        return new ValidationResponse(true,null);
+
+        logger.info("=============Going out of {}", new Object() {}.getClass().getEnclosingMethod().getName());
+        return new ValidationResponse(true, null);
     }
 }

@@ -121,17 +121,20 @@ public class Entity {
     }
 
     public Integer insert(List<Map<String, Object>> valuesList){
+        logger.info("=============Inside Class {}, Function {}", this.getClass().getSimpleName(), (new Object() {}.getClass().getEnclosingMethod().getName()));
+        logger.info("Parameter(valuesList = {})", valuesList.toString());
+        valuesList.stream().forEach(value -> value.put(getPrimary(), count(new ArrayList<>()) + 1));
+        logger.info("valueList = {}",valuesList.toString());
         ValidationResponse status=postStartupValidations.postStartupValidations(entity,valuesList);
         if(status.getError()!=null)return -1;
-        for(Map<String,Object> value: valuesList){
-            value.put(getPrimary(),count(new ArrayList<>())+1);
-        }
+//        valuesList.stream().forEach(value -> value.put(getPrimary(), count(new ArrayList<>()) + 1));
         long startTime = System.currentTimeMillis();
         logger.info("Going to execute insert query for "+entity+" at "+startTime+"ms");
         Integer records=serv.insert(new InsertRequest(entity,valuesList,"spriced_meritor"));
         long endtime = System.currentTimeMillis();
         logger.info("The insert query for "+entity+" has been executed at "+endtime+"ms");
         logger.info("Total time taken = {}ms",endtime-startTime);
+        logger.info("=============Going out of {}", (new Object() {}.getClass().getEnclosingMethod().getName()));
         return records;
     }
 

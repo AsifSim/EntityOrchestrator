@@ -10,10 +10,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class StartupValidations {
@@ -45,25 +43,22 @@ public class StartupValidations {
     public ValidationResponse nonNullValidation(Entity entity){
         logger.info("=============Inside Class {}, Function {}", this.getClass().getSimpleName(), (new Object() {}.getClass().getEnclosingMethod().getName()));
         logger.info("Parameter(entityName = {}, Attributes = {}, PrimaryKey = {}, RelatedEntities = {})", entity.getEntity(),entity.getAttributes().toString(),entity.getPrimary(),entity.getRelationshipEntity());
-        List<String> notNull= new ArrayList<>();
-        for(Map<String,Object> attribute: entity.getAttributes()){
-            if(!(boolean)attribute.get("allowNull")) notNull.add(attribute.get("name").toString());
-        }
+        List<String> notNull = entity.getAttributes().stream()
+                .filter(attribute -> !(boolean) attribute.get("allowNull"))
+                .map(attribute -> attribute.get("name").toString()).collect(Collectors.toList());
         long startTime = System.currentTimeMillis();
         logger.info("Going to execute the fetch query from entity: {} at: {}ms",entity.getEntity(),startTime);
         List<Map<String,Object>> fetchResult=entity.fetchColumns(notNull);
         long endTime = System.currentTimeMillis();
         logger.info("The fetch query from entity: {} has been executed at: {}ms",entity.getEntity(),endTime);
         logger.info("Total time taken = {}ms",endTime-startTime);
-//        logger.info("fetchedResult = {}",fetchResult.toString());
-        for(Map<String,Object> record: fetchResult){
-            for(String column: notNull){
-                if(record.get(column)==null){
-                    logger.info("=============Going out of {}", (new Object() {}.getClass().getEnclosingMethod().getName()));
-                    return new ValidationResponse(false,"The non null column "+column+" is null for primaryKey"+record.get(entity.getPrimary()));
-                }
-            }
-        }
+        Optional<ValidationResponse> validationResponse = fetchResult.stream().flatMap(record -> notNull.stream()
+                        .filter(column -> record.get(column) == null)
+                        .map(column -> {
+                            logger.info("=============Going out of {}", (new Object() {}.getClass().getEnclosingMethod().getName()));
+                            return new ValidationResponse(false, "The non-null column " + column + " is null for primaryKey " + record.get(entity.getPrimary()));
+                        })
+                ).findFirst();
         logger.info("=============Going out of {}", (new Object() {}.getClass().getEnclosingMethod().getName()));
         return new ValidationResponse(true,null);
     }
@@ -79,16 +74,16 @@ public class StartupValidations {
         logger.info("Total time taken = {}ms",endTime-startTime);
 //        logger.info("fetchedResult = {}",fetchResult.toString());
         HashMap<String,Integer> unique=new HashMap<>();
-        for(Map<String,Object> record: fetchResult){
-            unique.put(record.get(entity.getPrimary()).toString(),unique.getOrDefault(record.get(entity.getPrimary()),0)+1);
-            if(unique.get(record.get(entity.getPrimary()).toString())>1){
-                logger.info("=============Going out of {}", (new Object() {}.getClass().getEnclosingMethod().getName()));
-                return new ValidationResponse(false,"The unique column "+entity.getPrimary()+" contains duplicate value "+record.get(entity.getPrimary()));
-            }
-        }
+        Optional<ValidationResponse> validationResponse = fetchResult.stream().map(record -> {
+                    String primaryValue = record.get(entity.getPrimary()).toString();
+                    unique.put(primaryValue, unique.getOrDefault(primaryValue, 0) + 1);
+                    if (unique.get(primaryValue) > 1) {
+                        logger.info("=============Going out of {}", (new Object() {}.getClass().getEnclosingMethod().getName()));
+                        return new ValidationResponse(false, "The unique column " + entity.getPrimary() + " contains duplicate value " + primaryValue);
+                    }return null;
+                }).filter(Objects::nonNull).findFirst();
+        if (validationResponse.isPresent()) return validationResponse.get();
         logger.info("=============Going out of {}", (new Object() {}.getClass().getEnclosingMethod().getName()));
         return new ValidationResponse(true,null);
     }
-
-
 }
